@@ -2,6 +2,7 @@ var http = require('http');
 var handler = require('./request-handler');
 var initialize = require('./initialize.js');
 
+var htmlFetcher = require('../workers/htmlFetcher'); // Kick off worker
 // Why do you think we have this here?
 // HINT: It has to do with what's in .gitignore
 initialize('./archives');

@@ -83,8 +83,18 @@ var isUrlArchived = function(item, cb) {
 exports.isUrlArchived = isUrlArchived;
 
 exports.downloadUrls = function(array) {
+  if (array === undefined) { array = []; }
+
   // add array to list?
   var processDownloads = function () {
+    if (array.length === 0) {
+      readListOfUrls(function(allData) {
+        // TODO: optimize?
+        _.each(allData, downloadUnlessArchived);
+      });
+      return;
+    }
+
     _.each(array, function(item) {
       isUrlInList(item, function(exists) {
         if (!exists) {
