@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var http = require('http');
 var _ = require('underscore');
 
 /*
@@ -28,7 +29,8 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 // read from sites.txt
-exports.readListOfUrls = function(cb) {
+
+var readListOfUrls = function(cb) {
   var allData = [];
 
   fs.readFile(paths.list, 'utf8', function(err, data) {
@@ -53,18 +55,65 @@ exports.readListOfUrls = function(cb) {
   });
 };
 
-exports.isUrlInList = function() {
+exports.readListOfUrls = readListOfUrls;
+
+// return boolean, is item in list?
+var isUrlInList = function(item, cb) {
+  readListOfUrls(function(allData) {
+    var result = allData.indexOf(item) > -1;
+    return cb(result);
+  });
 };
 
-exports.addUrlToList = function() {
+exports.isUrlInList = isUrlInList;
+
+var addUrlToList = function(item, cb) {
+  fs.writeFile(paths.list, item, { flag: 'a' }, cb);
 };
 
-exports.isUrlArchived = function() {
-  // look at 'sites/' directory
+exports.addUrlToList = addUrlToList;
+
+var isUrlArchived = function(item, cb) {
+  fs.readdir(paths.archivedSites, function(err, files) {
+    var exists = files.indexOf(item) > -1;
+    return cb(exists);
+  });
 };
 
-exports.downloadUrls = function() {
-  // have the worker compare 'sites/' contents to the sites.txt file
-  // if present in sites, then do not download
-  // if not present in sites, then worker downloads
+exports.isUrlArchived = isUrlArchived;
+
+exports.downloadUrls = function(array) {
+  // add array to list?
+  var processDownloads = function () {
+    readListOfUrls(function(allData) {
+      _.each(allData, downloadUnlessArchived);
+    });
+  };
+
+  var downloadUnlessArchived = function(item) {
+    isUrlArchived(item, function(itemExists) {
+      if (!itemExists) { download(item); }
+    });
+  };
+
+  var download = function(item) {
+    // TODO: pass a fully-qualified URL to `http.get`
+    var pathToItem = 'http://' + item;
+    http.get(pathToItem, function(result) {
+      var body = '';
+
+      result.on('data', function(data) {
+        body += data.toString();
+      });
+
+      result.on('end', function() {
+        var outputFilePath = path.join(paths.archivedSites, item);
+        fs.writeFile(outputFilePath, body, function(err) {
+          if (err) { throw err; }
+        });
+      });
+    });
+  };
+
+  processDownloads();
 };
