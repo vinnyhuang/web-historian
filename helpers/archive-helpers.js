@@ -9,11 +9,13 @@ var _ = require('underscore');
  * customize it in any way you wish.
  */
 
-exports.paths = {
+var paths = {
   siteAssets: path.join(__dirname, '../web/public'),
   archivedSites: path.join(__dirname, '../archives/sites'),
   list: path.join(__dirname, '../archives/sites.txt')
 };
+
+exports.paths = paths;
 
 // Used for stubbing paths for tests, do not modify
 exports.initialize = function(pathsObj) {
@@ -25,7 +27,30 @@ exports.initialize = function(pathsObj) {
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-exports.readListOfUrls = function() {
+// read from sites.txt
+exports.readListOfUrls = function(cb) {
+  var allData = [];
+
+  fs.readFile(paths.list, 'utf8', function(err, data) {
+    var i = 0;
+    var entry = '';
+
+    while (i < data.length) {
+      if (data[i] === '\n') {
+        allData.push(entry);
+        entry = '';
+      } else {
+        entry += data[i];
+      }
+
+      i += 1;
+    }
+    if (data.length !== 0) {
+      allData.push(entry);
+    }
+
+    cb(allData);
+  });
 };
 
 exports.isUrlInList = function() {
@@ -35,7 +60,11 @@ exports.addUrlToList = function() {
 };
 
 exports.isUrlArchived = function() {
+  // look at 'sites/' directory
 };
 
 exports.downloadUrls = function() {
+  // have the worker compare 'sites/' contents to the sites.txt file
+  // if present in sites, then do not download
+  // if not present in sites, then worker downloads
 };
