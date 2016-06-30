@@ -77,6 +77,8 @@ describe('server', function() {
 });
 
 describe('archive helpers', function() {
+
+
   describe('#readListOfUrls', function () {
     it('should read urls from sites.txt', function (done) {
       var urlArray = ['example1.com', 'example2.com'];
@@ -123,7 +125,10 @@ describe('archive helpers', function() {
     });
   });
 
+
   describe('#isUrlArchived', function () {
+
+
     it('should check if a url is archived', function (done) {
       fs.writeFileSync(archive.paths.archivedSites + '/www.example.com', 'blah blah');
 
@@ -143,6 +148,12 @@ describe('archive helpers', function() {
   });
 
   describe('#downloadUrls', function () {
+    before(function() {
+      // clear out list
+      fs.writeFileSync(archive.paths.list, '');
+      // clear out archived sites?
+    });
+
     it('should download all pending urls in the list', function (done) {
       var urlArray = ['www.example.com', 'www.google.com'];
       archive.downloadUrls(urlArray);
