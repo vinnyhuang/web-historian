@@ -92,20 +92,14 @@ exports.downloadUrls = function(array) {
             if (err) {
               throw err;
             }
-
             readListOfUrls(function(allData) {
+              // TODO: optimize?
               _.each(allData, downloadUnlessArchived);
             });
           });
         }
       });
     });
-
-    // TODO, does this belong here? potential optimization problem...
-    // readListOfUrls(function(allData) {
-    //   console.log(allData);
-    //   _.each(allData, downloadUnlessArchived);
-    // });
   };
 
   var downloadUnlessArchived = function(item) {
