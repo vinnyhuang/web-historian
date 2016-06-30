@@ -1,5 +1,6 @@
 var path = require('path');
 var fs = require('fs');
+var qs = require('querystring');
 var archive = require('../helpers/archive-helpers');
 var httpHelpers = require ('./request-handler.js');
 // require more modules/folders here!
@@ -59,5 +60,24 @@ var handleGet = function(req, res) {
 };
 
 var handlePost = function(req, res) {
+  var headers = Object.assign({}, httpHelpers.headers);
+  headers['Content-type'] = 'text/plain';
 
+  var body = '';
+  req.on('data', function(chunk) {
+    body += chunk.toString();
+  });
+  req.on('end', function() {
+    var params = qs.parse(body);
+
+    archive.addUrlToList(params.url + '\n', function(err) {
+      if (err) {
+        res.writeHead(500, headers);
+        return res.end('Server error');
+      }
+
+      res.writeHead(302, headers);
+      res.end('Successful Post');
+    });
+  });
 };
