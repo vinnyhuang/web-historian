@@ -47,7 +47,7 @@ var readListOfUrls = function(cb) {
 
       i += 1;
     }
-    if (data.length !== 0) {
+    if (entry !== '') {
       allData.push(entry);
     }
 
@@ -85,9 +85,27 @@ exports.isUrlArchived = isUrlArchived;
 exports.downloadUrls = function(array) {
   // add array to list?
   var processDownloads = function () {
-    readListOfUrls(function(allData) {
-      _.each(allData, downloadUnlessArchived);
+    _.each(array, function(item) {
+      isUrlInList(item, function(exists) {
+        if (!exists) {
+          addUrlToList(item + '\n', function(err) {
+            if (err) {
+              throw err;
+            }
+
+            readListOfUrls(function(allData) {
+              _.each(allData, downloadUnlessArchived);
+            });
+          });
+        }
+      });
     });
+
+    // TODO, does this belong here? potential optimization problem...
+    // readListOfUrls(function(allData) {
+    //   console.log(allData);
+    //   _.each(allData, downloadUnlessArchived);
+    // });
   };
 
   var downloadUnlessArchived = function(item) {
